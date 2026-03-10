@@ -1,0 +1,178 @@
+{% extends "flat/base.html" %}
+
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="mb-1">Flat Dashboard</h2>
+        <p class="text-muted mb-0">Welcome, {{ user.first_name|default:user.username }}</p>
+    </div>
+    <div>
+        <a href="{% url 'add_transaction' %}" class="btn btn-primary">Add Transaction</a>
+        <a href="{% url 'transaction_list' %}" class="btn btn-outline-secondary">View All Transactions</a>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-body">
+                <h6 class="text-muted">Flat Balance</h6>
+                <h3 class="mb-0">${{ balance }}</h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-body">
+                <h6 class="text-muted">Total Money In</h6>
+                <h3 class="mb-0 text-success">${{ total_in }}</h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-body">
+                <h6 class="text-muted">Total Money Out</h6>
+                <h3 class="mb-0 text-danger">${{ total_out }}</h3>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-6">
+        <div class="card shadow-sm h-100">
+            <div class="card-body">
+                <h5 class="card-title">Pending Claims</h5>
+                <p class="text-muted mb-2">Claims waiting to be paid back</p>
+                <h4 class="mb-0">${{ pending_claim_total }}</h4>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card shadow-sm h-100">
+            <div class="card-body">
+                <h5 class="card-title">Quick Notes</h5>
+                <p class="mb-1">Everyone can add transactions.</p>
+                <p class="mb-1">Personal payments become claims automatically.</p>
+                <p class="mb-0">Only admin can mark claims as paid.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3">
+    <div class="col-lg-7">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">Recent Transactions</h5>
+            </div>
+            <div class="card-body">
+                {% if transactions %}
+                    <div class="table-responsive">
+                        <table class="table table-striped align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Description</th>
+                                    <th>Amount</th>
+                                    <th>Type</th>
+                                    <th>Source</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for transaction in transactions %}
+                                <tr>
+                                    <td>{{ transaction.date }}</td>
+                                    <td>
+                                        <div>{{ transaction.description }}</div>
+                                        <small class="text-muted">
+                                            by {{ transaction.created_by.first_name|default:transaction.created_by.username }}
+                                        </small>
+                                    </td>
+                                    <td>${{ transaction.amount }}</td>
+                                    <td>
+                                        {% if transaction.transaction_type == "IN" %}
+                                            <span class="badge bg-success">Money In</span>
+                                        {% else %}
+                                            <span class="badge bg-danger">Money Out</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if transaction.payment_source == "FLAT" %}
+                                            <span class="badge bg-primary">Flat Account</span>
+                                        {% elif transaction.payment_source == "PERSONAL" %}
+                                            <span class="badge bg-warning text-dark">Personal</span>
+                                        {% elif transaction.payment_source == "TRANSFER" %}
+                                            <span class="badge bg-secondary">Transfer</span>
+                                        {% else %}
+                                            <span class="text-muted">—</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if transaction.claim_status == "PENDING" %}
+                                            <span class="badge bg-warning text-dark">Pending</span>
+                                        {% elif transaction.claim_status == "PAID" %}
+                                            <span class="badge bg-success">Paid</span>
+                                        {% else %}
+                                            <span class="badge bg-light text-dark">None</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="mb-0 text-muted">No transactions yet.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-5">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">Pending Claims</h5>
+            </div>
+            <div class="card-body">
+                {% if pending_claims %}
+                    <div class="list-group list-group-flush">
+                        {% for transaction in pending_claims %}
+                            <div class="list-group-item px-0">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <div class="fw-semibold">{{ transaction.description }}</div>
+                                        <div class="text-muted small">
+                                            {{ transaction.date }} •
+                                            {{ transaction.created_by.first_name|default:transaction.created_by.username }}
+                                        </div>
+                                    </div>
+                                    <div class="text-end">
+                                        <div class="fw-semibold">${{ transaction.amount }}</div>
+
+                                        {% if user.is_staff %}
+                                            <a href="{% url 'mark_claim_paid' transaction.id %}"
+                                               class="btn btn-sm btn-outline-success mt-2">
+                                                Mark Paid
+                                            </a>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="mb-0 text-muted">No pending claims.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
