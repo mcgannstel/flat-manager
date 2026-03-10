@@ -1,7 +1,22 @@
 from django.db import models
 from django.contrib.auth.models import User
 
+class Chore(models.Model):
+    name = models.CharField(max_length=100)
+    description = models.TextField(blank=True)
 
+    def __str__(self):
+        return self.name
+
+
+class RosterAssignment(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    chore = models.ForeignKey(Chore, on_delete=models.CASCADE)
+    week_start = models.DateField()
+
+    def __str__(self):
+        return f"{self.week_start} - {self.user.username} - {self.chore.name}"
+    
 class Transaction(models.Model):
     TRANSACTION_TYPE_CHOICES = [
         ("IN", "Money In"),
