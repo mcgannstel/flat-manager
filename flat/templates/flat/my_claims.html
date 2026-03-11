@@ -1,0 +1,56 @@
+{% extends "flat/base.html" %}
+
+{% block content %}
+
+<h2 class="mb-4">My Claims</h2>
+
+<div class="card shadow-sm">
+    <div class="card-body">
+        {% if claims %}
+            <div class="table-responsive">
+                <table class="table table-striped align-middle">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Description</th>
+                            <th>Amount</th>
+                            <th>Paid By</th>
+                            <th>Status</th>
+                            <th>Reimbursed Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for claim in claims %}
+                        <tr>
+                            <td>{{ claim.date }}</td>
+                            <td>{{ claim.description }}</td>
+                            <td>${{ claim.amount }}</td>
+                            <td>
+                                {% if claim.paid_by %}
+                                    {{ claim.paid_by.first_name|default:claim.paid_by.username }}
+                                {% else %}
+                                    {{ claim.created_by.first_name|default:claim.created_by.username }}
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if claim.claim_status == "PENDING" %}
+                                    <span class="badge bg-warning text-dark">Pending</span>
+                                {% elif claim.claim_status == "PAID" %}
+                                    <span class="badge bg-success">Paid</span>
+                                {% else %}
+                                    <span class="text-muted">—</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ claim.reimbursed_date|default:"—" }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <p class="text-muted mb-0">No claims found.</p>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %}

@@ -2,39 +2,92 @@
 
 {% block content %}
 
-<h2>Add Transaction</h2>
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white">
+                <h4 class="mb-0">Add Transaction</h4>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
 
-<form method="post">
+                    {% if form.non_field_errors %}
+                        <div class="alert alert-danger">
+                            {{ form.non_field_errors }}
+                        </div>
+                    {% endif %}
 
-{% csrf_token %}
+                    <div class="mb-3">
+                        {{ form.date.label_tag }}
+                        {{ form.date }}
+                        {% if form.date.errors %}
+                            <div class="text-danger small">{{ form.date.errors }}</div>
+                        {% endif %}
+                    </div>
 
-<div class="mb-3">
-{{ form.date.label_tag }}
-{{ form.date }}
+                    <div class="mb-3">
+                        {{ form.description.label_tag }}
+                        {{ form.description }}
+                        {% if form.description.errors %}
+                            <div class="text-danger small">{{ form.description.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        {{ form.category.label_tag }}
+                        {{ form.category }}
+                        {% if form.category.errors %}
+                            <div class="text-danger small">{{ form.category.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        {{ form.amount.label_tag }}
+                        {{ form.amount }}
+                        {% if form.amount.errors %}
+                            <div class="text-danger small">{{ form.amount.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        {{ form.transaction_type.label_tag }}
+                        {{ form.transaction_type }}
+                        {% if form.transaction_type.errors %}
+                            <div class="text-danger small">{{ form.transaction_type.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        {{ form.payment_source.label_tag }}
+                        {{ form.payment_source }}
+                        {% if form.payment_source.errors %}
+                            <div class="text-danger small">{{ form.payment_source.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        {{ form.paid_by.label_tag }}
+                        {{ form.paid_by }}
+                        {% if form.paid_by.errors %}
+                            <div class="text-danger small">{{ form.paid_by.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        {{ form.notes.label_tag }}
+                        {{ form.notes }}
+                        {% if form.notes.errors %}
+                            <div class="text-danger small">{{ form.notes.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">Save Transaction</button>
+                    <a href="{% url 'transaction_list' %}" class="btn btn-outline-secondary">Cancel</a>
+                </form>
+            </div>
+        </div>
+    </div>
 </div>
-
-<div class="mb-3">
-{{ form.description.label_tag }}
-{{ form.description }}
-</div>
-
-<div class="mb-3">
-{{ form.amount.label_tag }}
-{{ form.amount }}
-</div>
-
-<div class="mb-3">
-{{ form.transaction_type.label_tag }}
-{{ form.transaction_type }}
-</div>
-
-<div class="mb-3">
-{{ form.payment_source.label_tag }}
-{{ form.payment_source }}
-</div>
-
-<button class="btn btn-primary">Save</button>
-
-</form>
 
 {% endblock %}

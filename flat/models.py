@@ -1,22 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 
-class Chore(models.Model):
-    name = models.CharField(max_length=100)
-    description = models.TextField(blank=True)
 
-    def __str__(self):
-        return self.name
-
-
-class RosterAssignment(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    chore = models.ForeignKey(Chore, on_delete=models.CASCADE)
-    week_start = models.DateField()
-
-    def __str__(self):
-        return f"{self.week_start} - {self.user.username} - {self.chore.name}"
-    
 class Transaction(models.Model):
     TRANSACTION_TYPE_CHOICES = [
         ("IN", "Money In"),
@@ -51,7 +36,21 @@ class Transaction(models.Model):
         blank=True
     )
 
-    created_by = models.ForeignKey(User, on_delete=models.CASCADE)
+    # Who entered the record into the app
+    created_by = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="transactions_created"
+    )
+
+    # Who actually paid or contributed the money
+    paid_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="transactions_paid"
+    )
 
     is_claim = models.BooleanField(default=False)
 
@@ -75,12 +74,18 @@ class Transaction(models.Model):
     notes = models.TextField(blank=True)
 
     def save(self, *args, **kwargs):
+        """
+        Personal OUT transactions are claims, but they do NOT reduce
+        the flat balance until reimbursement is actually paid.
+        """
         if self.transaction_type == "OUT" and self.payment_source == "PERSONAL":
             self.is_claim = True
+
             if self.claim_status == "NONE":
                 self.claim_status = "PENDING"
+
             if self.reimbursed_to is None:
-                self.reimbursed_to = self.created_by
+                self.reimbursed_to = self.paid_by or self.created_by
         else:
             self.is_claim = False
             self.claim_status = "NONE"
@@ -90,4 +95,25 @@ class Transaction(models.Model):
         super().save(*args, **kwargs)
 
     def __str__(self):
-        return f"{self.date} - {self.description} - {self.amount}"
+        return f"{self.date} - {self.description} - ${self.amount}"
+
+
+class Chore(models.Model):
+    name = models.CharField(max_length=100)
+    description = models.TextField(blank=True)
+
+    def __str__(self):
+        return self.name
+
+
+class RosterAssignment(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    chore = models.ForeignKey(Chore, on_delete=models.CASCADE)
+    week_start = models.DateField()
+
+    class Meta:
+        unique_together = ("user", "week_start")
+        ordering = ["week_start", "chore__name"]
+
+    def __str__(self):
+        return f"{self.week_start} - {self.user.username} - {self.chore.name}"
