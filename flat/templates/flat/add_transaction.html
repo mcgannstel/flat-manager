@@ -1,93 +1,116 @@
 {% extends "flat/base.html" %}
 
 {% block content %}
+<div class="container px-2 px-sm-3">
+    <div class="row justify-content-center">
+        <div class="col-12 col-md-10 col-lg-8">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-white py-3">
+                    <h4 class="mb-0 fs-5 fs-sm-4">Add Transaction</h4>
+                </div>
 
-<div class="row justify-content-center">
-    <div class="col-lg-8">
-        <div class="card shadow-sm">
-            <div class="card-header bg-white">
-                <h4 class="mb-0">Add Transaction</h4>
-            </div>
-            <div class="card-body">
-                <form method="post">
-                    {% csrf_token %}
+                <div class="card-body p-3 p-sm-4">
+                    <form method="post" novalidate>
+                        {% csrf_token %}
 
-                    {% if form.non_field_errors %}
-                        <div class="alert alert-danger">
-                            {{ form.non_field_errors }}
+                        {% if form.non_field_errors %}
+                            <div class="alert alert-danger small">
+                                {{ form.non_field_errors }}
+                            </div>
+                        {% endif %}
+
+                        <div class="mb-3">
+                            <label for="{{ form.date.id_for_label }}" class="form-label">
+                                {{ form.date.label }}
+                            </label>
+                            {{ form.date }}
+                            {% if form.date.errors %}
+                                <div class="text-danger small mt-1">{{ form.date.errors }}</div>
+                            {% endif %}
                         </div>
-                    {% endif %}
 
-                    <div class="mb-3">
-                        {{ form.date.label_tag }}
-                        {{ form.date }}
-                        {% if form.date.errors %}
-                            <div class="text-danger small">{{ form.date.errors }}</div>
-                        {% endif %}
-                    </div>
+                        <div class="mb-3">
+                            <label for="{{ form.description.id_for_label }}" class="form-label">
+                                {{ form.description.label }}
+                            </label>
+                            {{ form.description }}
+                            {% if form.description.errors %}
+                                <div class="text-danger small mt-1">{{ form.description.errors }}</div>
+                            {% endif %}
+                        </div>
 
-                    <div class="mb-3">
-                        {{ form.description.label_tag }}
-                        {{ form.description }}
-                        {% if form.description.errors %}
-                            <div class="text-danger small">{{ form.description.errors }}</div>
-                        {% endif %}
-                    </div>
+                        <div class="mb-3">
+                            <label for="{{ form.category.id_for_label }}" class="form-label">
+                                {{ form.category.label }}
+                            </label>
+                            {{ form.category }}
+                            {% if form.category.errors %}
+                                <div class="text-danger small mt-1">{{ form.category.errors }}</div>
+                            {% endif %}
+                        </div>
 
-                    <div class="mb-3">
-                        {{ form.category.label_tag }}
-                        {{ form.category }}
-                        {% if form.category.errors %}
-                            <div class="text-danger small">{{ form.category.errors }}</div>
-                        {% endif %}
-                    </div>
+                        <div class="mb-3">
+                            <label for="{{ form.amount.id_for_label }}" class="form-label">
+                                {{ form.amount.label }}
+                            </label>
+                            {{ form.amount }}
+                            {% if form.amount.errors %}
+                                <div class="text-danger small mt-1">{{ form.amount.errors }}</div>
+                            {% endif %}
+                        </div>
 
-                    <div class="mb-3">
-                        {{ form.amount.label_tag }}
-                        {{ form.amount }}
-                        {% if form.amount.errors %}
-                            <div class="text-danger small">{{ form.amount.errors }}</div>
-                        {% endif %}
-                    </div>
+                        <div class="mb-3">
+                            <label for="{{ form.transaction_type.id_for_label }}" class="form-label">
+                                {{ form.transaction_type.label }}
+                            </label>
+                            {{ form.transaction_type }}
+                            {% if form.transaction_type.errors %}
+                                <div class="text-danger small mt-1">{{ form.transaction_type.errors }}</div>
+                            {% endif %}
+                        </div>
 
-                    <div class="mb-3">
-                        {{ form.transaction_type.label_tag }}
-                        {{ form.transaction_type }}
-                        {% if form.transaction_type.errors %}
-                            <div class="text-danger small">{{ form.transaction_type.errors }}</div>
-                        {% endif %}
-                    </div>
+                        <div class="mb-3">
+                            <label for="{{ form.payment_source.id_for_label }}" class="form-label">
+                                {{ form.payment_source.label }}
+                            </label>
+                            {{ form.payment_source }}
+                            {% if form.payment_source.errors %}
+                                <div class="text-danger small mt-1">{{ form.payment_source.errors }}</div>
+                            {% endif %}
+                        </div>
 
-                    <div class="mb-3">
-                        {{ form.payment_source.label_tag }}
-                        {{ form.payment_source }}
-                        {% if form.payment_source.errors %}
-                            <div class="text-danger small">{{ form.payment_source.errors }}</div>
-                        {% endif %}
-                    </div>
+                        <div class="mb-3">
+                            <label for="{{ form.paid_by.id_for_label }}" class="form-label">
+                                {{ form.paid_by.label }}
+                            </label>
+                            {{ form.paid_by }}
+                            {% if form.paid_by.errors %}
+                                <div class="text-danger small mt-1">{{ form.paid_by.errors }}</div>
+                            {% endif %}
+                        </div>
 
-                    <div class="mb-3">
-                        {{ form.paid_by.label_tag }}
-                        {{ form.paid_by }}
-                        {% if form.paid_by.errors %}
-                            <div class="text-danger small">{{ form.paid_by.errors }}</div>
-                        {% endif %}
-                    </div>
+                        <div class="mb-3">
+                            <label for="{{ form.notes.id_for_label }}" class="form-label">
+                                {{ form.notes.label }}
+                            </label>
+                            {{ form.notes }}
+                            {% if form.notes.errors %}
+                                <div class="text-danger small mt-1">{{ form.notes.errors }}</div>
+                            {% endif %}
+                        </div>
 
-                    <div class="mb-3">
-                        {{ form.notes.label_tag }}
-                        {{ form.notes }}
-                        {% if form.notes.errors %}
-                            <div class="text-danger small">{{ form.notes.errors }}</div>
-                        {% endif %}
-                    </div>
-
-                    <button type="submit" class="btn btn-primary">Save Transaction</button>
-                    <a href="{% url 'transaction_list' %}" class="btn btn-outline-secondary">Cancel</a>
-                </form>
+                        <div class="d-grid gap-2 d-sm-flex justify-content-sm-end mt-4">
+                            <button type="submit" class="btn btn-primary w-100 w-sm-auto">
+                                Save Transaction
+                            </button>
+                            <a href="{% url 'transaction_list' %}" class="btn btn-outline-secondary w-100 w-sm-auto">
+                                Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
 </div>
-
 {% endblock %}
