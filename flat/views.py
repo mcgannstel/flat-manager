@@ -25,7 +25,6 @@ def dashboard(request):
         or Decimal("0.00")
     )
 
-    # Only money actually paid out of the flat account/card reduces flat balance
     total_out = (
         Transaction.objects.filter(
             transaction_type="OUT",
@@ -63,6 +62,15 @@ def dashboard(request):
         .order_by("chore__name", "user__username")
     )
 
+    # Recycling alternates starting from week beginning 2026-02-09
+    base_recycling_week = timezone.datetime(2026, 2, 9).date()
+    weeks_since_base = (this_week_start - base_recycling_week).days // 7
+
+    if weeks_since_base % 2 == 0:
+        recycling_note = "Mixed Recycling Week"
+    else:
+        recycling_note = "Glass Recycling Week"
+
     context = {
         "transactions": transactions,
         "total_in": total_in,
@@ -73,6 +81,7 @@ def dashboard(request):
         "my_chore": my_chore,
         "weekly_roster": weekly_roster,
         "this_week_start": this_week_start,
+        "recycling_note": recycling_note,
     }
     return render(request, "flat/dashboard.html", context)
 
@@ -137,7 +146,6 @@ def mark_claim_paid(request, transaction_id):
     claim.reimbursed_date = timezone.localdate()
     claim.save()
 
-    # Create the actual flat-account reimbursement transaction
     Transaction.objects.create(
         date=timezone.localdate(),
         description=f"Reimbursement for: {claim.description}",

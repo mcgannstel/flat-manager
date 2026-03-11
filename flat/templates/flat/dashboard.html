@@ -5,7 +5,9 @@
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
         <h2 class="mb-1">Flat Dashboard</h2>
-        <p class="text-muted mb-0">Welcome, {{ user.first_name|default:user.username }}</p>
+        <p class="text-muted mb-0">
+            Welcome, {{ user.first_name|default:user.username }}
+        </p>
     </div>
     <div>
         <a href="{% url 'add_transaction' %}" class="btn btn-primary">Add Transaction</a>
@@ -19,6 +21,7 @@
             <div class="card-body">
                 <h6 class="text-muted">Flat Balance</h6>
                 <h3 class="mb-0">${{ balance }}</h3>
+                <small class="text-muted">Based on actual flat-account money in and out</small>
             </div>
         </div>
     </div>
@@ -37,6 +40,7 @@
             <div class="card-body">
                 <h6 class="text-muted">Total Money Out</h6>
                 <h3 class="mb-0 text-danger">${{ total_out }}</h3>
+                <small class="text-muted">Flat account only</small>
             </div>
         </div>
     </div>
@@ -44,30 +48,87 @@
 
 <div class="row g-3 mb-4">
     <div class="col-md-6">
-        <div class="card shadow-sm h-100">
+        <div class="card shadow-sm h-100 border-primary">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">Your Chore This Week</h5>
+            </div>
             <div class="card-body">
-                <h5 class="card-title">Pending Claims</h5>
-                <p class="text-muted mb-2">Claims waiting to be paid back</p>
-                <h4 class="mb-0">${{ pending_claim_total }}</h4>
+                {% if my_chore %}
+                    <h4 class="mb-2">{{ my_chore.chore.name }}</h4>
+                    <p class="text-muted mb-2">Week starting {{ this_week_start }}</p>
+
+                    {% if my_chore.chore.name == "Recycling" %}
+                        <div class="alert alert-info py-2">
+                            <strong>{{ recycling_note }}</strong>
+                        </div>
+                    {% endif %}
+
+                    {% if my_chore.chore.description %}
+                        <p class="mb-0">{{ my_chore.chore.description }}</p>
+                    {% else %}
+                        <p class="text-muted mb-0">No description added yet.</p>
+                    {% endif %}
+                {% else %}
+                    <p class="text-muted mb-0">No chore assigned for this week yet.</p>
+                {% endif %}
             </div>
         </div>
     </div>
 
     <div class="col-md-6">
         <div class="card shadow-sm h-100">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">Pending Claims</h5>
+            </div>
             <div class="card-body">
-                <h5 class="card-title">Quick Notes</h5>
-                <p class="mb-1">Everyone can add transactions.</p>
-                <p class="mb-1">Personal payments become claims automatically.</p>
-                <p class="mb-0">Only admin can mark claims as paid.</p>
+                <p class="text-muted mb-2">Claims waiting to be paid back</p>
+                <h4 class="mb-0">${{ pending_claim_total }}</h4>
             </div>
         </div>
     </div>
 </div>
 
-<div class="row g-3">
-    <div class="col-lg-7">
-        <div class="card shadow-sm">
+<div class="row g-3 mb-4">
+    <div class="col-lg-6">
+        <div class="card shadow-sm h-100">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">This Week's Chore Roster</h5>
+            </div>
+            <div class="card-body">
+                {% if weekly_roster %}
+                    <p class="text-muted">Week starting {{ this_week_start }}</p>
+
+                    <div class="mb-2">
+                        <span class="badge bg-info text-dark">{{ recycling_note }}</span>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table table-striped align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Flatmate</th>
+                                    <th>Chore</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for assignment in weekly_roster %}
+                                <tr {% if assignment.user == user %}class="table-primary"{% endif %}>
+                                    <td>{{ assignment.user.first_name|default:assignment.user.username }}</td>
+                                    <td>{{ assignment.chore.name }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="text-muted mb-0">No roster assignments for this week yet.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6">
+        <div class="card shadow-sm h-100">
             <div class="card-header bg-white">
                 <h5 class="mb-0">Recent Transactions</h5>
             </div>
@@ -81,8 +142,7 @@
                                     <th>Description</th>
                                     <th>Amount</th>
                                     <th>Type</th>
-                                    <th>Source</th>
-                                    <th>Status</th>
+                                    <th>Claim</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -92,7 +152,7 @@
                                     <td>
                                         <div>{{ transaction.description }}</div>
                                         <small class="text-muted">
-                                            by {{ transaction.created_by.first_name|default:transaction.created_by.username }}
+                                            entered by {{ transaction.created_by.first_name|default:transaction.created_by.username }}
                                         </small>
                                     </td>
                                     <td>${{ transaction.amount }}</td>
@@ -104,23 +164,14 @@
                                         {% endif %}
                                     </td>
                                     <td>
-                                        {% if transaction.payment_source == "FLAT" %}
-                                            <span class="badge bg-primary">Flat Account</span>
-                                        {% elif transaction.payment_source == "PERSONAL" %}
-                                            <span class="badge bg-warning text-dark">Personal</span>
-                                        {% elif transaction.payment_source == "TRANSFER" %}
-                                            <span class="badge bg-secondary">Transfer</span>
+                                        {% if transaction.is_claim %}
+                                            {% if transaction.claim_status == "PENDING" %}
+                                                <span class="badge bg-warning text-dark">Pending</span>
+                                            {% elif transaction.claim_status == "PAID" %}
+                                                <span class="badge bg-success">Paid</span>
+                                            {% endif %}
                                         {% else %}
                                             <span class="text-muted">—</span>
-                                        {% endif %}
-                                    </td>
-                                    <td>
-                                        {% if transaction.claim_status == "PENDING" %}
-                                            <span class="badge bg-warning text-dark">Pending</span>
-                                        {% elif transaction.claim_status == "PAID" %}
-                                            <span class="badge bg-success">Paid</span>
-                                        {% else %}
-                                            <span class="badge bg-light text-dark">None</span>
                                         {% endif %}
                                     </td>
                                 </tr>
@@ -129,50 +180,66 @@
                         </table>
                     </div>
                 {% else %}
-                    <p class="mb-0 text-muted">No transactions yet.</p>
-                {% endif %}
-            </div>
-        </div>
-    </div>
-
-    <div class="col-lg-5">
-        <div class="card shadow-sm">
-            <div class="card-header bg-white">
-                <h5 class="mb-0">Pending Claims</h5>
-            </div>
-            <div class="card-body">
-                {% if pending_claims %}
-                    <div class="list-group list-group-flush">
-                        {% for transaction in pending_claims %}
-                            <div class="list-group-item px-0">
-                                <div class="d-flex justify-content-between align-items-start">
-                                    <div>
-                                        <div class="fw-semibold">{{ transaction.description }}</div>
-                                        <div class="text-muted small">
-                                            {{ transaction.date }} •
-                                            {{ transaction.created_by.first_name|default:transaction.created_by.username }}
-                                        </div>
-                                    </div>
-                                    <div class="text-end">
-                                        <div class="fw-semibold">${{ transaction.amount }}</div>
-
-                                        {% if user.is_staff %}
-                                            <a href="{% url 'mark_claim_paid' transaction.id %}"
-                                               class="btn btn-sm btn-outline-success mt-2">
-                                                Mark Paid
-                                            </a>
-                                        {% endif %}
-                                    </div>
-                                </div>
-                            </div>
-                        {% endfor %}
-                    </div>
-                {% else %}
-                    <p class="mb-0 text-muted">No pending claims.</p>
+                    <p class="text-muted mb-0">No transactions yet.</p>
                 {% endif %}
             </div>
         </div>
     </div>
 </div>
+
+{% if pending_claims %}
+<div class="card shadow-sm">
+    <div class="card-header bg-white">
+        <h5 class="mb-0">Pending Claim Details</h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-striped align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Description</th>
+                        <th>Amount</th>
+                        <th>Paid By</th>
+                        <th>Status</th>
+                        {% if user.is_staff %}
+                            <th>Action</th>
+                        {% endif %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for transaction in pending_claims %}
+                    <tr>
+                        <td>{{ transaction.date }}</td>
+                        <td>{{ transaction.description }}</td>
+                        <td>${{ transaction.amount }}</td>
+                        <td>
+                            {% if transaction.paid_by %}
+                                {{ transaction.paid_by.first_name|default:transaction.paid_by.username }}
+                            {% elif transaction.reimbursed_to %}
+                                {{ transaction.reimbursed_to.first_name|default:transaction.reimbursed_to.username }}
+                            {% else %}
+                                {{ transaction.created_by.first_name|default:transaction.created_by.username }}
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="badge bg-warning text-dark">Pending</span>
+                        </td>
+                        {% if user.is_staff %}
+                        <td>
+                            <a href="{% url 'mark_claim_paid' transaction.id %}"
+                               class="btn btn-sm btn-outline-success">
+                                Mark Paid
+                            </a>
+                        </td>
+                        {% endif %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endif %}
 
 {% endblock %}
