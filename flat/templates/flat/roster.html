@@ -1,0 +1,51 @@
+{% extends "flat/base.html" %}
+
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <a href="?week={{ previous_week|date:'Y-m-d' }}" class="btn btn-outline-secondary">
+        ←
+    </a>
+
+    <div class="text-center">
+        <h4 class="mb-1">Chore Roster</h4>
+        <div class="text-muted">
+            Week starting {{ week_start }}
+        </div>
+    </div>
+
+    <a href="?week={{ next_week|date:'Y-m-d' }}" class="btn btn-outline-secondary">
+        →
+    </a>
+</div>
+
+<div class="card shadow-sm mb-3">
+    <div class="card-body text-center">
+        <span class="badge bg-info text-dark fs-6">
+            {{ recycling_note }}
+        </span>
+    </div>
+</div>
+
+{% if assignments %}
+<div class="row g-3">
+    {% for a in assignments %}
+    <div class="col-md-6">
+        <div class="card shadow-sm {% if a.user == user %}border-primary{% endif %}">
+            <div class="card-body">
+                <h5 class="mb-1">
+                    {{ a.user.first_name|default:a.user.username }}
+                </h5>
+                <div class="text-muted">
+                    {{ a.chore.name }}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<p class="text-muted mb-0">No roster for this week.</p>
+{% endif %}
+
+{% endblock %}

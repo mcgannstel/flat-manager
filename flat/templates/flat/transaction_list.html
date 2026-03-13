@@ -2,84 +2,190 @@
 
 {% block content %}
 
-<div class="d-flex justify-content-between align-items-center mb-4">
+<div class="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center gap-2 mb-4">
     <h2 class="mb-0">Transactions</h2>
-    <a href="{% url 'add_transaction' %}" class="btn btn-primary">Add Transaction</a>
+
+    <a href="{% url 'add_transaction' %}" class="btn btn-primary">
+        Add Transaction
+    </a>
 </div>
 
 <div class="card shadow-sm">
     <div class="card-body">
+
         {% if transactions %}
-            <div class="table-responsive">
-                <table class="table table-striped align-middle">
-                    <thead>
-                        <tr>
-                            <th>Date</th>
-                            <th>Description</th>
-                            <th>Amount</th>
-                            <th>Type</th>
-                            <th>Source</th>
-                            <th>Paid By</th>
-                            <th>Entered By</th>
-                            <th>Claim</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for transaction in transactions %}
-                        <tr>
-                            <td>{{ transaction.date }}</td>
-                            <td>
-                                <div class="fw-semibold">{{ transaction.description }}</div>
-                                {% if transaction.category %}
-                                    <div class="small text-muted">{{ transaction.category }}</div>
-                                {% endif %}
-                            </td>
-                            <td>${{ transaction.amount }}</td>
-                            <td>
-                                {% if transaction.transaction_type == "IN" %}
-                                    <span class="badge bg-success">Money In</span>
-                                {% else %}
-                                    <span class="badge bg-danger">Money Out</span>
-                                {% endif %}
-                            </td>
-                            <td>
-                                {% if transaction.payment_source == "FLAT" %}
-                                    <span class="badge bg-primary">Flat</span>
-                                {% elif transaction.payment_source == "PERSONAL" %}
-                                    <span class="badge bg-warning text-dark">Personal</span>
-                                {% elif transaction.payment_source == "TRANSFER" %}
-                                    <span class="badge bg-secondary">Transfer</span>
-                                {% else %}
-                                    <span class="text-muted">—</span>
-                                {% endif %}
-                            </td>
-                            <td>
-                                {% if transaction.paid_by %}
-                                    {{ transaction.paid_by.first_name|default:transaction.paid_by.username }}
-                                {% else %}
-                                    <span class="text-muted">—</span>
-                                {% endif %}
-                            </td>
-                            <td>{{ transaction.created_by.first_name|default:transaction.created_by.username }}</td>
-                            <td>
-                                {% if transaction.is_claim %}
-                                    {% if transaction.claim_status == "PENDING" %}
-                                        <span class="badge bg-warning text-dark">Pending</span>
-                                    {% elif transaction.claim_status == "PAID" %}
-                                        <span class="badge bg-success">Paid</span>
-                                    {% endif %}
-                                {% else %}
-                                    <span class="text-muted">No</span>
-                                {% endif %}
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+
+        <!-- MOBILE VIEW -->
+        <div class="d-md-none">
+
+            {% for transaction in transactions %}
+            <div class="border rounded p-3 mb-3">
+
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <div class="fw-semibold">
+                        {{ transaction.description }}
+                    </div>
+
+                    <div class="fw-semibold text-nowrap">
+                        ${{ transaction.amount }}
+                    </div>
+                </div>
+
+                {% if transaction.category %}
+                    <div class="small text-muted mb-2">
+                        {{ transaction.category }}
+                    </div>
+                {% endif %}
+
+                <div class="small text-muted mb-2">
+                    {{ transaction.date }}
+                </div>
+
+                <div class="mb-2 d-flex flex-wrap gap-2">
+
+                    {% if transaction.transaction_type == "IN" %}
+                        <span class="badge bg-success">Money In</span>
+                    {% else %}
+                        <span class="badge bg-danger">Money Out</span>
+                    {% endif %}
+
+                    {% if transaction.payment_source == "FLAT" %}
+                        <span class="badge bg-primary">Flat</span>
+                    {% elif transaction.payment_source == "PERSONAL" %}
+                        <span class="badge bg-warning text-dark">Personal</span>
+                    {% elif transaction.payment_source == "TRANSFER" %}
+                        <span class="badge bg-secondary">Transfer</span>
+                    {% endif %}
+
+                    {% if transaction.is_claim %}
+                        {% if transaction.claim_status == "PENDING" %}
+                            <span class="badge bg-warning text-dark">Pending</span>
+                        {% elif transaction.claim_status == "PAID" %}
+                            <span class="badge bg-success">Paid</span>
+                        {% endif %}
+                    {% endif %}
+
+                </div>
+
+                <div class="small text-muted">
+
+                    <div>
+                        <strong>Paid By:</strong>
+                        {% if transaction.paid_by %}
+                            {{ transaction.paid_by.first_name|default:transaction.paid_by.username }}
+                        {% else %}
+                            —
+                        {% endif %}
+                    </div>
+
+                    <div>
+                        <strong>Entered By:</strong>
+                        {{ transaction.created_by.first_name|default:transaction.created_by.username }}
+                    </div>
+
+                </div>
+
             </div>
+            {% endfor %}
+
+        </div>
+
+        <!-- DESKTOP TABLE -->
+        <div class="table-responsive d-none d-md-block">
+
+            <table class="table table-striped align-middle">
+
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Description</th>
+                        <th>Amount</th>
+                        <th>Type</th>
+                        <th>Source</th>
+                        <th>Paid By</th>
+                        <th>Entered By</th>
+                        <th>Claim</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    {% for transaction in transactions %}
+                    <tr>
+
+                        <td>{{ transaction.date }}</td>
+
+                        <td>
+                            <div class="fw-semibold">
+                                {{ transaction.description }}
+                            </div>
+
+                            {% if transaction.category %}
+                                <div class="small text-muted">
+                                    {{ transaction.category }}
+                                </div>
+                            {% endif %}
+                        </td>
+
+                        <td>${{ transaction.amount }}</td>
+
+                        <td>
+                            {% if transaction.transaction_type == "IN" %}
+                                <span class="badge bg-success">Money In</span>
+                            {% else %}
+                                <span class="badge bg-danger">Money Out</span>
+                            {% endif %}
+                        </td>
+
+                        <td>
+                            {% if transaction.payment_source == "FLAT" %}
+                                <span class="badge bg-primary">Flat</span>
+                            {% elif transaction.payment_source == "PERSONAL" %}
+                                <span class="badge bg-warning text-dark">Personal</span>
+                            {% elif transaction.payment_source == "TRANSFER" %}
+                                <span class="badge bg-secondary">Transfer</span>
+                            {% else %}
+                                <span class="text-muted">—</span>
+                            {% endif %}
+                        </td>
+
+                        <td>
+                            {% if transaction.paid_by %}
+                                {{ transaction.paid_by.first_name|default:transaction.paid_by.username }}
+                            {% else %}
+                                <span class="text-muted">—</span>
+                            {% endif %}
+                        </td>
+
+                        <td>
+                            {{ transaction.created_by.first_name|default:transaction.created_by.username }}
+                        </td>
+
+                        <td>
+                            {% if transaction.is_claim %}
+                                {% if transaction.claim_status == "PENDING" %}
+                                    <span class="badge bg-warning text-dark">Pending</span>
+                                {% elif transaction.claim_status == "PAID" %}
+                                    <span class="badge bg-success">Paid</span>
+                                {% endif %}
+                            {% else %}
+                                <span class="text-muted">No</span>
+                            {% endif %}
+                        </td>
+
+                    </tr>
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
         {% else %}
             <p class="text-muted mb-0">No transactions yet.</p>
         {% endif %}
+
     </div>
 </div>
 

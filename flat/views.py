@@ -1,10 +1,14 @@
 from decimal import Decimal
-
+from datetime import datetime, timedelta
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.db.models import Sum, Q
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
-
+from datetime import timedelta
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import render
+from django.utils import timezone
+from django.utils.dateparse import parse_date
 from .forms import TransactionForm
 from .models import Transaction, RosterAssignment
 
@@ -15,9 +19,11 @@ def is_staff_user(user):
 
 @login_required
 def dashboard(request):
+    today = timezone.localdate()
+    this_week_start = today - timezone.timedelta(days=today.weekday())
     transactions = Transaction.objects.select_related(
         "created_by", "paid_by", "reimbursed_to"
-    ).order_by("-date", "-created_at")[:10]
+    ).exclude(category="Reimbursement").order_by("-date", "-created_at")[:10]
 
     total_in = (
         Transaction.objects.filter(transaction_type="IN")
@@ -46,9 +52,19 @@ def dashboard(request):
         pending_claims.aggregate(total=Sum("amount"))["total"]
         or Decimal("0.00")
     )
+    my_pending_claims = Transaction.objects.select_related(
+        "created_by", "paid_by", "reimbursed_to"
+    ).filter(
+        is_claim=True,
+        claim_status="PENDING",
+    ).filter(
+        Q(paid_by=request.user) | Q(reimbursed_to=request.user) | Q(created_by=request.user)
+    ).order_by("-date", "-created_at")
 
-    today = timezone.localdate()
-    this_week_start = today - timezone.timedelta(days=today.weekday())
+    my_pending_claim_total = (
+        my_pending_claims.aggregate(total=Sum("amount"))["total"]
+        or Decimal("0.00")
+    )
 
     my_chore = (
         RosterAssignment.objects.select_related("chore", "user")
@@ -77,6 +93,7 @@ def dashboard(request):
         "total_out": total_out,
         "balance": balance,
         "pending_claims": pending_claims,
+        "my_pending_claims_total":my_pending_claim_total,
         "pending_claim_total": pending_claim_total,
         "my_chore": my_chore,
         "weekly_roster": weekly_roster,
@@ -159,3 +176,44 @@ def mark_claim_paid(request, transaction_id):
     )
 
     return redirect("dashboard")
+
+
+
+
+
+@login_required
+def roster(request):
+    week_param = request.GET.get("week")
+
+    today = timezone.localdate()
+    default_week_start = today - timedelta(days=today.weekday())
+
+    week_start = parse_date(week_param) if week_param else default_week_start
+    if week_start is None:
+        week_start = default_week_start
+
+    assignments = (
+        RosterAssignment.objects.select_related("user", "chore")
+        .filter(week_start=week_start)
+        .order_by("chore__name", "user__username")
+    )
+
+    previous_week = week_start - timedelta(days=7)
+    next_week = week_start + timedelta(days=7)
+
+    base_week = timezone.datetime(2026, 2, 9).date()
+    weeks_since = (week_start - base_week).days // 7
+
+    if weeks_since % 2 == 0:
+        recycling_note = "Mixed Recycling Week"
+    else:
+        recycling_note = "Glass Recycling Week"
+
+    context = {
+        "assignments": assignments,
+        "week_start": week_start,
+        "previous_week": previous_week,
+        "next_week": next_week,
+        "recycling_note": recycling_note,
+    }
+    return render(request, "flat/roster.html", context)

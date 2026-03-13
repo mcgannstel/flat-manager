@@ -2,16 +2,21 @@
 
 {% block content %}
 
-<div class="d-flex justify-content-between align-items-center mb-4">
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4">
     <div>
         <h2 class="mb-1">Flat Dashboard</h2>
         <p class="text-muted mb-0">
             Welcome, {{ user.first_name|default:user.username }}
         </p>
     </div>
-    <div>
-        <a href="{% url 'add_transaction' %}" class="btn btn-primary">Add Transaction</a>
-        <a href="{% url 'transaction_list' %}" class="btn btn-outline-secondary">View All Transactions</a>
+
+    <div class="d-flex flex-column flex-sm-row gap-2 w-100 w-md-auto">
+        <a href="{% url 'add_transaction' %}" class="btn btn-primary">
+            Add Transaction
+        </a>
+        <a href="{% url 'transaction_list' %}" class="btn btn-outline-secondary">
+            View All Transactions
+        </a>
     </div>
 </div>
 
@@ -79,11 +84,11 @@
     <div class="col-md-6">
         <div class="card shadow-sm h-100">
             <div class="card-header bg-white">
-                <h5 class="mb-0">Pending Claims</h5>
+                <h5 class="mb-0">My Pending Claims</h5>
             </div>
             <div class="card-body">
-                <p class="text-muted mb-2">Claims waiting to be paid back</p>
-                <h4 class="mb-0">${{ pending_claim_total }}</h4>
+                <p class="text-muted mb-2">Claims waiting to be paid back to you</p>
+                <h4 class="mb-0">${{ my_pending_claim_total }}</h4>
             </div>
         </div>
     </div>
@@ -135,7 +140,44 @@
             </div>
             <div class="card-body">
                 {% if transactions %}
-                    <div class="table-responsive">
+
+                    <!-- Mobile cards -->
+                    <div class="d-block d-md-none">
+                        {% for transaction in transactions %}
+                        <div class="border rounded p-3 mb-3">
+                            <div class="d-flex justify-content-between align-items-start gap-3 mb-2">
+                                <strong class="flex-grow-1">{{ transaction.description }}</strong>
+                                <span class="fw-semibold text-nowrap">${{ transaction.amount }}</span>
+                            </div>
+
+                            <div class="small text-muted mb-2">
+                                {{ transaction.date }}<br>
+                                entered by {{ transaction.created_by.first_name|default:transaction.created_by.username }}
+                            </div>
+
+                            <div class="d-flex flex-wrap gap-2">
+                                {% if transaction.transaction_type == "IN" %}
+                                    <span class="badge bg-success">Money In</span>
+                                {% else %}
+                                    <span class="badge bg-danger">Money Out</span>
+                                {% endif %}
+
+                                {% if transaction.is_claim %}
+                                    {% if transaction.claim_status == "PENDING" %}
+                                        <span class="badge bg-warning text-dark">Pending</span>
+                                    {% elif transaction.claim_status == "PAID" %}
+                                        <span class="badge bg-success">Paid</span>
+                                    {% endif %}
+                                {% else %}
+                                    <span class="text-muted">No claim</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Desktop table -->
+                    <div class="table-responsive d-none d-md-block">
                         <table class="table table-striped align-middle mb-0">
                             <thead>
                                 <tr>
@@ -180,6 +222,7 @@
                             </tbody>
                         </table>
                     </div>
+
                 {% else %}
                     <p class="text-muted mb-0">No transactions yet.</p>
                 {% endif %}
@@ -188,13 +231,55 @@
     </div>
 </div>
 
-{% if pending_claims %}
+{% if my_pending_claims %}
 <div class="card shadow-sm">
     <div class="card-header bg-white">
-        <h5 class="mb-0">Pending Claim Details</h5>
+        <h5 class="mb-0">My Pending Claim Details</h5>
     </div>
     <div class="card-body">
-        <div class="table-responsive">
+
+        <!-- Mobile cards -->
+        <div class="d-block d-md-none">
+            {% for transaction in my_pending_claims %}
+            <div class="border rounded p-3 mb-3">
+                <div class="d-flex justify-content-between align-items-start gap-3 mb-2">
+                    <strong class="flex-grow-1">{{ transaction.description }}</strong>
+                    <span class="fw-semibold text-nowrap">${{ transaction.amount }}</span>
+                </div>
+
+                <div class="small text-muted mb-2">
+                    {{ transaction.date }}
+                </div>
+
+                <div class="mb-2">
+                    <strong>Paid By:</strong>
+                    {% if transaction.paid_by %}
+                        {{ transaction.paid_by.first_name|default:transaction.paid_by.username }}
+                    {% elif transaction.reimbursed_to %}
+                        {{ transaction.reimbursed_to.first_name|default:transaction.reimbursed_to.username }}
+                    {% else %}
+                        {{ transaction.created_by.first_name|default:transaction.created_by.username }}
+                    {% endif %}
+                </div>
+
+                <div class="mb-2">
+                    <span class="badge bg-warning text-dark">Pending</span>
+                </div>
+
+                {% if user.is_staff %}
+                <div>
+                    <a href="{% url 'mark_claim_paid' transaction.id %}"
+                       class="btn btn-sm btn-outline-success w-100">
+                        Mark Paid
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Desktop table -->
+        <div class="table-responsive d-none d-md-block">
             <table class="table table-striped align-middle mb-0">
                 <thead>
                     <tr>
@@ -209,7 +294,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {% for transaction in pending_claims %}
+                    {% for transaction in my_pending_claims %}
                     <tr>
                         <td>{{ transaction.date }}</td>
                         <td>{{ transaction.description }}</td>
@@ -239,6 +324,7 @@
                 </tbody>
             </table>
         </div>
+
     </div>
 </div>
 {% endif %}
