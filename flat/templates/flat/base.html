@@ -58,9 +58,11 @@
                     {{ user.username }}
                 </span>
 
-                <a class="btn btn-outline-light btn-sm" href="/admin/">
-                    Admin
-                </a>
+                {% if user.username == "stella" %}
+                    <a href="{% url 'admin:index' %}" class="btn btn-outline-secondary">
+                        Admin
+                    </a>
+                    {% endif %}
             </div>
 
         </div>
