@@ -242,7 +242,7 @@ def receive_rent(request):
         {"user_id": 5, "amount": Decimal("305.00")},
         {"user_id": 1, "amount": Decimal("325.00")},
         {"user_id": 3, "amount": Decimal("305.00")},
-        {"user_id": 4, "amount": Decimal("325.00")},
+        {"user_id": 4, "amount": Decimal("235.00")},
         {"user_id": 2, "amount": Decimal("275.00")},
     ]
 
