@@ -1,0 +1,59 @@
+{% extends "flat/base.html" %}
+
+{% block content %}
+<div class="container py-4" style="max-width: 800px;">
+    <div class="mb-4">
+        <h2 class="fw-bold mb-1">Receive Rent</h2>
+        <p class="text-muted mb-0">
+            This will create a <strong>Money In</strong> transaction for each flatmate with
+            category and description set to <strong>Rent + Expenses</strong>.
+        </p>
+    </div>
+
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-body">
+            <form method="post">
+                {% csrf_token %}
+
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Date received</label>
+                    {{ form.date }}
+                </div>
+
+                <button type="submit" class="btn btn-success">
+                    Record Rent + Expenses
+                </button>
+                <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary ms-2">
+                    Cancel
+                </a>
+            </form>
+        </div>
+    </div>
+
+    <div class="card shadow-sm border-0">
+        <div class="card-header bg-white">
+            <h5 class="mb-0">Transactions to be created</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped mb-0">
+                    <thead>
+                        <tr>
+                            <th>User ID</th>
+                            <th>Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in rent_data %}
+                        <tr>
+                            <td>{{ item.user_id }}</td>
+                            <td>${{ item.amount }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

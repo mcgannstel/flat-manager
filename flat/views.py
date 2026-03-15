@@ -11,7 +11,15 @@ from django.utils import timezone
 from django.utils.dateparse import parse_date
 from .forms import TransactionForm
 from .models import Transaction, RosterAssignment
-
+from .forms import ReceiveRentForm
+from .models import Transaction
+from decimal import Decimal
+from django.contrib import messages
+from django.contrib.auth import get_user_model
+from django.shortcuts import redirect, render
+from .forms import ReceiveRentForm
+from .models import Transaction
+User = get_user_model()
 
 def is_staff_user(user):
     return user.is_staff or user.is_superuser
@@ -218,3 +226,59 @@ def roster(request):
         "recycling_note": recycling_note,
     }
     return render(request, "flat/roster.html", context)
+
+def help_page(request):
+    return render(request, "flat/help.html")
+
+
+
+
+@login_required
+def receive_rent(request):
+    if not (request.user.username.lower() == "stella" or request.user.is_staff):
+        return redirect("dashboard")
+
+    rent_data = [
+        {"user_id": 5, "amount": Decimal("305.00")},
+        {"user_id": 1, "amount": Decimal("325.00")},
+        {"user_id": 3, "amount": Decimal("305.00")},
+        {"user_id": 4, "amount": Decimal("325.00")},
+        {"user_id": 2, "amount": Decimal("275.00")},
+    ]
+
+    if request.method == "POST":
+        form = ReceiveRentForm(request.POST)
+        if form.is_valid():
+            selected_date = form.cleaned_data["date"]
+
+            created_count = 0
+
+            for item in rent_data:
+                flatmate = User.objects.get(id=item["user_id"])
+
+                Transaction.objects.create(
+                    date=selected_date,
+                    description="Rent + Expenses",
+                    category="Rent + Expenses",
+                    amount=item["amount"],
+                    transaction_type="IN",
+                    payment_source="TRANSFER",
+                    created_by=request.user,
+                    paid_by=flatmate,
+                    notes=f"Bulk rent/expenses received for {flatmate.first_name or flatmate.username}",
+                )
+                created_count += 1
+
+            messages.success(
+                request,
+                f"{created_count} rent transactions were recorded for {selected_date}."
+            )
+            return redirect("dashboard")
+    else:
+        form = ReceiveRentForm()
+
+    context = {
+        "form": form,
+        "rent_data": rent_data,
+    }
+    return render(request, "flat/receive_rent.html", context)

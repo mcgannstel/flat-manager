@@ -1,0 +1,111 @@
+{% extends "flat/base.html" %}
+
+{% block content %}
+<div class="container py-4" style="max-width: 900px;">
+    <div class="mb-4">
+        <h1 class="fw-bold mb-2">Flat Manager Guide</h1>
+        <p class="text-muted mb-0">
+            Most important information is on the dashboard, but this page explains how to record transactions properly.
+        </p>
+    </div>
+
+    <div class="alert alert-info border-0 shadow-sm mb-4" role="alert">
+        <h5 class="alert-heading mb-2">Rent and $25 expenses</h5>
+        <p class="mb-0">
+            Stella will record all <strong>rent</strong> and <strong>$25 expenses</strong> payments once received.
+            You do <strong>not</strong> need to enter these yourself.
+        </p>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-md-6">
+            <div class="card shadow-sm h-100 border-0">
+                <div class="card-body">
+                    <h4 class="card-title mb-3">Recording a Transaction</h4>
+                    <p class="mb-3">
+                        Transactions can be added here:
+                    </p>
+                    <p class="mb-3">
+                        <a href="https://flat-manager-app.onrender.com/transactions/add/" class="btn btn-primary" target="_blank">
+                            Add Transaction
+                        </a>
+                    </p>
+
+                    <h6 class="text-uppercase text-muted fw-semibold">Transaction Type</h6>
+                    <ul class="mb-3">
+                        <li><strong>Money In</strong> — money going into the flat account</li>
+                        <li><strong>Money Out</strong> — money being spent</li>
+                    </ul>
+
+                    <h6 class="text-uppercase text-muted fw-semibold">Payment Source</h6>
+                    <ul class="mb-0">
+                        <li><strong>Flat Account/Card</strong></li>
+                        <li><strong>Bank Transfer</strong></li>
+                        <li><strong>Paid Personally</strong></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card shadow-sm h-100 border-0">
+                <div class="card-body">
+                    <h4 class="card-title mb-3">Dashboard</h4>
+                    <p>
+                        The dashboard shows the main things you will usually need:
+                    </p>
+                    <ul class="mb-0">
+                        <li>Flat balance</li>
+                        <li>Total money in</li>
+                        <li>Total money out</li>
+                        <li>Your pending claims</li>
+                        <li>Your chore for the week</li>
+                        <li>Recent transactions</li>
+                    </ul>
+                    <p class="text-muted mt-3 mb-0">
+                        Feel free to look through the other pages if you want more detail.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow-sm border-0 mt-4">
+        <div class="card-body">
+            <h4 class="card-title mb-3">Using the Flat Card</h4>
+            <p>
+                The flat card is located on top of the fridge.
+                If you use it, please record the transaction yourself and include a clear note in the description.
+            </p>
+
+            <div class="bg-light rounded p-3 border">
+                <div><strong>Transaction Type:</strong> Money Out</div>
+                <div><strong>Payment Source:</strong> Flat Account/Card</div>
+                <div><strong>Description:</strong> Include what it was for</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow-sm border-0 mt-4">
+        <div class="card-body">
+            <h4 class="card-title mb-3">Paying With Your Own Money</h4>
+            <p>
+                If you buy something for the flat using your own money, record it like this:
+            </p>
+
+            <div class="bg-light rounded p-3 border mb-3">
+                <div><strong>Transaction Type:</strong> Money Out</div>
+                <div><strong>Payment Source:</strong> Paid Personally</div>
+                <div><strong>Description:</strong> Include what it was for</div>
+            </div>
+
+            <p class="mb-0">
+                The <strong>Paid By</strong> dropdown only needs to be completed when recording use of
+                <strong>personal money</strong> or when <strong>sending money</strong>.
+            </p>
+        </div>
+    </div>
+
+    
+</div>
+{% endblock %}
