@@ -240,14 +240,14 @@
     </div>
 </div>
 
+{# Everyone sees their own pending claims #}
 {% if my_pending_claims %}
-<div class="card shadow-sm">
+<div class="card shadow-sm mb-4">
     <div class="card-header bg-white">
         <h5 class="mb-0">My Pending Claim Details</h5>
     </div>
     <div class="card-body">
 
-        <!-- Mobile cards -->
         <div class="d-block d-md-none">
             {% for transaction in my_pending_claims %}
             <div class="border rounded p-3 mb-3">
@@ -271,23 +271,11 @@
                     {% endif %}
                 </div>
 
-                <div class="mb-2">
-                    <span class="badge bg-warning text-dark">Pending</span>
-                </div>
-
-                {% if user.is_staff %}
-                <div>
-                    <a href="{% url 'mark_claim_paid' transaction.id %}"
-                       class="btn btn-sm btn-outline-success w-100">
-                        Mark Paid
-                    </a>
-                </div>
-                {% endif %}
+                <span class="badge bg-warning text-dark">Pending</span>
             </div>
             {% endfor %}
         </div>
 
-        <!-- Desktop table -->
         <div class="table-responsive d-none d-md-block">
             <table class="table table-striped align-middle mb-0">
                 <thead>
@@ -297,9 +285,6 @@
                         <th>Amount</th>
                         <th>Paid By</th>
                         <th>Status</th>
-                        {% if user.is_staff %}
-                            <th>Action</th>
-                        {% endif %}
                     </tr>
                 </thead>
                 <tbody>
@@ -320,14 +305,6 @@
                         <td>
                             <span class="badge bg-warning text-dark">Pending</span>
                         </td>
-                        {% if user.is_staff %}
-                        <td>
-                            <a href="{% url 'mark_claim_paid' transaction.id %}"
-                               class="btn btn-sm btn-outline-success">
-                                Mark Paid
-                            </a>
-                        </td>
-                        {% endif %}
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -338,4 +315,98 @@
 </div>
 {% endif %}
 
+
+{# Staff/admin sees all pending claims and can mark them paid #}
+{% if user.is_staff and pending_claims %}
+<div class="card shadow-sm">
+    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">All Pending Claims</h5>
+        <span class="badge bg-warning text-dark">${{ pending_claim_total }}</span>
+    </div>
+    <div class="card-body">
+
+        <div class="d-block d-md-none">
+            {% for transaction in pending_claims %}
+            <div class="border rounded p-3 mb-3">
+                <div class="d-flex justify-content-between align-items-start gap-3 mb-2">
+                    <strong class="flex-grow-1">{{ transaction.description }}</strong>
+                    <span class="fw-semibold text-nowrap">${{ transaction.amount }}</span>
+                </div>
+
+                <div class="small text-muted mb-2">
+                    {{ transaction.date }}
+                </div>
+
+                <div class="mb-2">
+                    <strong>Claim For:</strong>
+                    {% if transaction.reimbursed_to %}
+                        {{ transaction.reimbursed_to.first_name|default:transaction.reimbursed_to.username }}
+                    {% elif transaction.paid_by %}
+                        {{ transaction.paid_by.first_name|default:transaction.paid_by.username }}
+                    {% else %}
+                        {{ transaction.created_by.first_name|default:transaction.created_by.username }}
+                    {% endif %}
+                </div>
+
+                <div class="mb-3">
+                    <span class="badge bg-warning text-dark">Pending</span>
+                </div>
+
+                <a href="{% url 'mark_claim_paid' transaction.id %}"
+                   class="btn btn-sm btn-outline-success w-100">
+                    Mark Paid
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="table-responsive d-none d-md-block">
+            <table class="table table-striped align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Description</th>
+                        <th>Amount</th>
+                        <th>Claim For</th>
+                        <th>Entered By</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for transaction in pending_claims %}
+                    <tr>
+                        <td>{{ transaction.date }}</td>
+                        <td>{{ transaction.description }}</td>
+                        <td>${{ transaction.amount }}</td>
+                        <td>
+                            {% if transaction.reimbursed_to %}
+                                {{ transaction.reimbursed_to.first_name|default:transaction.reimbursed_to.username }}
+                            {% elif transaction.paid_by %}
+                                {{ transaction.paid_by.first_name|default:transaction.paid_by.username }}
+                            {% else %}
+                                {{ transaction.created_by.first_name|default:transaction.created_by.username }}
+                            {% endif %}
+                        </td>
+                        <td>
+                            {{ transaction.created_by.first_name|default:transaction.created_by.username }}
+                        </td>
+                        <td>
+                            <span class="badge bg-warning text-dark">Pending</span>
+                        </td>
+                        <td>
+                            <a href="{% url 'mark_claim_paid' transaction.id %}"
+                               class="btn btn-sm btn-outline-success">
+                                Mark Paid
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+</div>
+{% endif %}
 {% endblock %}
