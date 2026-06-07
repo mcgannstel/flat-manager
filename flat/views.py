@@ -240,40 +240,95 @@ def receive_rent(request):
 
     rent_data = [
         {"user_id": 5, "amount": Decimal("305.00")},
-        {"user_id": 1, "amount": Decimal("325.00")},
+        {"user_id": 4, "amount": Decimal("325.00")},
         {"user_id": 3, "amount": Decimal("305.00")},
-        {"user_id": 4, "amount": Decimal("235.00")},
+        {"user_id": 1, "amount": Decimal("235.00")},
         {"user_id": 2, "amount": Decimal("275.00")},
     ]
 
+    for item in rent_data:
+        user = User.objects.get(id=item["user_id"])
+        item["user"] = user
+        item["name"] = user.get_full_name() or user.username
+
     if request.method == "POST":
         form = ReceiveRentForm(request.POST)
-        if form.is_valid():
-            selected_date = form.cleaned_data["date"]
 
+        if form.is_valid():
+            receive_date = form.cleaned_data.get("receive_date")
+            pay_date = form.cleaned_data.get("pay_date")
+            receive_date = form.cleaned_data.get("receive_date")
+            pay_date = form.cleaned_data.get("pay_date")
+
+            # Must provide at least one date
+            if not receive_date and not pay_date:
+                messages.error(
+                    request,
+                    "Please provide a date to pay rent, receive rent, or both."
+                )
+                return render(
+                    request,
+                    "flat/receive_rent.html",
+                    {
+                        "form": form,
+                        "rent_data": rent_data,
+                    }
+                )
+
+            # Rent cannot be paid before it is received
+            if receive_date and pay_date and pay_date < receive_date:
+                messages.error(
+                    request,
+                    "The rent paid date cannot be earlier than the rent received date."
+                )
+                return render(
+                    request,
+                    "flat/receive_rent.html",
+                    {
+                        "form": form,
+                        "rent_data": rent_data,
+                    }
+                )
+                        
             created_count = 0
 
-            for item in rent_data:
-                flatmate = User.objects.get(id=item["user_id"])
+            if receive_date:
+                for item in rent_data:
+                    Transaction.objects.create(
+                        date=receive_date,
+                        description="Rent + Expenses",
+                        category="Rent + Expenses",
+                        amount=item["amount"],
+                        transaction_type="IN",
+                        payment_source="TRANSFER",
+                        created_by=request.user,
+                        paid_by=item["user"],
+                        notes=f"Bulk rent/expenses received for {item['name']}",
+                    )
+                    created_count += 1
+
+            if pay_date:
+                total_rent = sum(item["amount"] for item in rent_data)
 
                 Transaction.objects.create(
-                    date=selected_date,
-                    description="Rent + Expenses",
+                    date=pay_date,
+                    description="Rent + Expenses paid",
                     category="Rent + Expenses",
-                    amount=item["amount"],
-                    transaction_type="IN",
-                    payment_source="TRANSFER",
+                    amount=total_rent,
+                    transaction_type="OUT",
+                    payment_source="FLAT",
                     created_by=request.user,
-                    paid_by=flatmate,
-                    notes=f"Bulk rent/expenses received for {flatmate.first_name or flatmate.username}",
+                    notes="Bulk rent/expenses payment from flat account.",
                 )
                 created_count += 1
 
             messages.success(
                 request,
-                f"{created_count} rent transactions were recorded for {selected_date}."
+                f"{created_count} rent transaction(s) were recorded."
             )
+
             return redirect("dashboard")
+
     else:
         form = ReceiveRentForm()
 
@@ -281,4 +336,5 @@ def receive_rent(request):
         "form": form,
         "rent_data": rent_data,
     }
+
     return render(request, "flat/receive_rent.html", context)

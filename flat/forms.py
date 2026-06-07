@@ -122,6 +122,12 @@ class TransactionForm(forms.ModelForm):
 
 
 class ReceiveRentForm(forms.Form):
-    date = forms.DateField(
-        widget=forms.DateInput(attrs={"type": "date", "class": "form-control"})
+    receive_date = forms.DateField(
+        required=False,
+        widget=forms.DateInput(attrs={"type": "date"})
+    )
+
+    pay_date = forms.DateField(
+        required=False,
+        widget=forms.DateInput(attrs={"type": "date"})
     )
