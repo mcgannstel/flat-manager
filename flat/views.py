@@ -240,7 +240,7 @@ def receive_rent(request):
 
     rent_data = [
         {"user_id": 5, "amount": Decimal("310.00")},
-        {"user_id": 4, "amount": Decimal("320.00")},
+        {"user_id": 4, "amount": Decimal("330.00")},
         {"user_id": 3, "amount": Decimal("310.00")},
         {"user_id": 1, "amount": Decimal("240.00")},
         {"user_id": 2, "amount": Decimal("280.00")},
