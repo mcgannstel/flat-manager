@@ -314,7 +314,7 @@ def receive_rent(request):
                     date=pay_date,
                     description="Rent + Expenses paid",
                     category="Rent + Expenses",
-                    amount=total_rent,
+                    amount=1320,
                     transaction_type="OUT",
                     payment_source="FLAT",
                     created_by=request.user,
