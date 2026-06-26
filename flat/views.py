@@ -239,11 +239,11 @@ def receive_rent(request):
         return redirect("dashboard")
 
     rent_data = [
-        {"user_id": 5, "amount": Decimal("305.00")},
-        {"user_id": 4, "amount": Decimal("325.00")},
-        {"user_id": 3, "amount": Decimal("305.00")},
-        {"user_id": 1, "amount": Decimal("235.00")},
-        {"user_id": 2, "amount": Decimal("275.00")},
+        {"user_id": 5, "amount": Decimal("310.00")},
+        {"user_id": 4, "amount": Decimal("320.00")},
+        {"user_id": 3, "amount": Decimal("310.00")},
+        {"user_id": 1, "amount": Decimal("240.00")},
+        {"user_id": 2, "amount": Decimal("280.00")},
     ]
 
     for item in rent_data:
