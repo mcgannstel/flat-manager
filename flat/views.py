@@ -312,8 +312,8 @@ def receive_rent(request):
 
                 Transaction.objects.create(
                     date=pay_date,
-                    description="Rent + Expenses paid",
-                    category="Rent + Expenses",
+                    description="Rent",
+                    category="Rent",
                     amount=1320,
                     transaction_type="OUT",
                     payment_source="FLAT",
